@@ -1,70 +1,76 @@
-# Application
+# Aplicação
 
-`expo-application` provides useful information about the native application's ID, app name, and build version at runtime.
+Uma biblioteca universal que fornece informações úteis sobre o ID, nome do aplicativo e versão de compilação do aplicativo nativo em tempo de execução.
 
-## Installation
+## Instalação
 
-`-` `npx expo install expo-application`
+Para instalar a API Application, execute o seguinte comando no seu projeto Expo:
 
-If you are installing this in an [existing React Native app](https://reactnative.dev/docs/integration-with-existing-apps), make sure to [install `expo`](https://docs.expo.dev/workflow/installing-expo-modules/) in your project.
+```bash
+npx expo install expo-application
+```
+
+Se você estiver instalando isso em um [aplicativo React Native existente](https://reactnative.dev/docs/integration-with-existing-apps), certifique-se de ter o `expo` instalado em seu projeto.
 
 ## API
 
-    import * as Application from 'expo-application';
+```javascript
+import * as Application from 'expo-application';
+```
 
-### Constants
+### Constantes
 
 #### `Application.applicationId`
 
-Type: `string | null`
+Tipo: `string | null`
 
-The ID of the application. On Android, this is the application ID. On iOS, this is the bundle ID. On web, this is `null`.
+O ID do aplicativo. No Android, este é o ID do aplicativo. No iOS, este é o ID do pacote. Na web, este é `null`.
 
-Example
+Exemplo:
 
 `"com.cococasts.scribbles"`, `"com.apple.Pages"`
 
 #### `Application.applicationName`
 
-Type: `string | null`
+Tipo: `string | null`
 
-The human-readable name of the application. On Android, this is the label of the application. On iOS, this is the display name of the application. On web, this is `null`.
+O nome legível do aplicativo. No Android, este é o rótulo do aplicativo. No iOS, este é o nome de exibição do aplicativo. Na web, este é `null`.
 
-Example
+Exemplo:
 
 `"Scribbles"`, `"Pages"`
 
 #### `Application.nativeApplicationVersion`
 
-Type: `string | null`
+Tipo: `string | null`
 
-The native application version. On Android, this is the `versionName` from `build.gradle`. On iOS, this is the `CFBundleShortVersionString` from `Info.plist`. On web, this is `null`.
+A versão nativa do aplicativo. No Android, este é o `versionName` do `build.gradle`. No iOS, este é o `CFBundleShortVersionString` do `Info.plist`. Na web, este é `null`.
 
-Example
+Exemplo:
 
 `"1.0.0"`
 
 #### `Application.nativeBuildVersion`
 
-Type: `string | null`
+Tipo: `string | null`
 
-The native build version. On Android, this is the `versionCode` from `build.gradle`. On iOS, this is the `CFBundleVersion` from `Info.plist`. On web, this is `null`.
+A versão de compilação nativa. No Android, este é o `versionCode` do `build.gradle`. No iOS, este é o `CFBundleVersion` do `Info.plist`. Na web, este é `null`.
 
-Example
+Exemplo:
 
 `"1"`
 
-### Methods
+### Métodos
 
 #### `Application.getAndroidId()`
 
 `Application.getAndroidId()`
 
-Gets the value of [`Settings.Secure.ANDROID_ID`](https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID). This is a hexadecimal `string` unique to each combination of app-signing key, user, and device. The value may change if a factory reset is performed on the device or if an APK signing key changes. For more information about how the platform handles `ANDROID_ID` in Android 8.0 (API level 26) and higher, see [Android 8.0 Behavior Changes](https://developer.android.com/about/versions/oreo/android-8.0-changes#privacy-all).
+Obtém o valor de [`Settings.Secure.ANDROID_ID`](https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID). Este é um `string` hexadecimal exclusivo para cada combinação de chave de assinatura de aplicativo, usuário e dispositivo. O valor pode mudar se uma redefinição de fábrica for realizada no dispositivo ou se uma chave de assinatura de APK for alterada. Para mais informações sobre como a plataforma lida com `ANDROID_ID` no Android 8.0 (API nível 26) e superior, consulte [Android 8.0 Behavior Changes](https://developer.android.com/about/versions/oreo/android-8.0-changes#privacy-all). No iOS e na web, esta função não está disponível.
 
-> In versions of the platform lower than Android 8.0 (API level 26), this value remains constant for the lifetime of the user's device. See the [ANDROID_ID](https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID) official docs for more information.
+> Em versões da plataforma anteriores ao Android 8.0 (API nível 26), este valor permanece constante durante a vida útil do dispositivo do usuário. Consulte a documentação oficial do [ANDROID_ID](https://developer.android.com/reference/android/provider/Settings.Secure#ANDROID_ID) para mais informações.
 
-Example
+Exemplo:
 
 `"dd96dec43fb81c97"`
 
@@ -72,67 +78,79 @@ Example
 
 `Application.getInstallationTimeAsync()`
 
-Returns a `Promise` that fulfills with a `number` specifying the timestamp of when the app was installed onto the device. On web, this function is unavailable.
+Retorna uma `Promise` que se resolve com um `number` especificando o timestamp de quando o aplicativo foi instalado no dispositivo. Na web, esta função não está disponível.
 
-Example
+Exemplo:
 
-    await Application.getInstallationTimeAsync();
+```javascript
+await Application.getInstallationTimeAsync();
+```
 
 #### `Application.getInstallReferrerAsync()`
 
 `Application.getInstallReferrerAsync()`
 
-Returns a `Promise` that fulfills with a `string` specifying the referrer URL of the app installation. On iOS and web, this function is unavailable.
+Retorna uma `Promise` que se resolve com um `string` especificando a URL de referência da instalação do aplicativo. No iOS e na web, esta função não está disponível.
 
-Example
+Exemplo:
 
-    await Application.getInstallReferrerAsync();
+```javascript
+await Application.getInstallReferrerAsync();
+```
 
 #### `Application.getIosApplicationReleaseTypeAsync()`
 
 `Application.getIosApplicationReleaseTypeAsync()`
 
-Returns a `Promise` that fulfills with an `ApplicationReleaseType` value indicating how the app was installed. On Android and web, this function is unavailable.
+Retorna uma `Promise` que se resolve com um valor `ApplicationReleaseType` indicando como o aplicativo foi instalado. No Android e na web, esta função não está disponível.
 
-Example
+Exemplo:
 
-    await Application.getIosApplicationReleaseTypeAsync();
+```javascript
+await Application.getIosApplicationReleaseTypeAsync();
+```
 
 #### `Application.getIosIdForVendorAsync()`
 
 `Application.getIosIdForVendorAsync()`
 
-Gets the iOS "identifier for vendor" ([IDFV](https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor)) value, a string ID that uniquely identifies a device to the app’s vendor. This method may sometimes return `nil`, in which case wait and call the method again later. This might happen when the device has been restarted before the user has unlocked the device.
+Obtém o valor do "identificador para fornecedor" ([IDFV](https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor)) do iOS, um ID de string que identifica exclusivamente um dispositivo para o fornecedor do aplicativo. Este método pode às vezes retornar `nil`, caso em que espere e chame o método novamente mais tarde. Isso pode acontecer quando o dispositivo foi reiniciado antes que o usuário tenha desbloqueado o dispositivo.
 
-The OS will change the vendor identifier if all apps from the current app's vendor have been uninstalled.
+O sistema operacional mudará o identificador do fornecedor se todos os aplicativos do fornecedor atual do aplicativo tiverem sido desinstalados.
 
-A `Promise` that fulfills with a `string` specifying the app's vendor ID. Apps from the same vendor will return the same ID. See Apple's documentation for more information about the vendor ID's semantics.
+Uma `Promise` que se resolve com um `string` especificando o ID do fornecedor do aplicativo. Aplicativos do mesmo fornecedor retornarão o mesmo ID. Consulte a documentação da Apple para mais informações sobre a semântica do ID do fornecedor.
 
-Example
+Exemplo:
 
-    await Application.getIosIdForVendorAsync();
+```javascript
+await Application.getIosIdForVendorAsync();
+```
 
 #### `Application.getIosPushNotificationServiceEnvironmentAsync()`
 
 `Application.getIosPushNotificationServiceEnvironmentAsync()`
 
-Returns a `Promise` that fulfills with a `PushNotificationServiceEnvironment` value indicating the push notification service environment. On Android and web, this function is unavailable.
+Retorna uma `Promise` que se resolve com um valor `PushNotificationServiceEnvironment` indicando o ambiente do serviço de notificação push. No Android e na web, esta função não está disponível.
 
-Example
+Exemplo:
 
-    await Application.getIosPushNotificationServiceEnvironmentAsync();
+```javascript
+await Application.getIosPushNotificationServiceEnvironmentAsync();
+```
 
 #### `Application.getLastUpdateTimeAsync()`
 
 `Application.getLastUpdateTimeAsync()`
 
-Returns a `Promise` that fulfills with a `number` specifying the timestamp of when the app was last updated. On iOS and web, this function is unavailable.
+Retorna uma `Promise` que se resolve com um `number` especificando o timestamp de quando o aplicativo foi atualizado pela última vez. No iOS e na web, esta função não está disponível.
 
-Example
+Exemplo:
 
-    await Application.getLastUpdateTimeAsync();
+```javascript
+await Application.getLastUpdateTimeAsync();
+```
 
-### Types
+### Tipos
 
 #### `PushNotificationServiceEnvironment`
 
@@ -142,9 +160,14 @@ Example
 
 `'SIMULATOR'` | `'STORE'` | `'AD_HOC'` | `'ENTERPRISE'` | `'DEVELOPMENT'`
 
-### Error codes
+### Códigos de Erro
 
 #### `Application.ErrorCode`
 
 `'E_APPLICATION_GET_ANDROID_ID_FAILED'` | `'E_APPLICATION_GET_INSTALLATION_TIME_FAILED'` | `'E_APPLICATION_GET_INSTALL_REFERRER_FAILED'` | `'E_APPLICATION_GET_IOS_APPLICATION_RELEASE_TYPE_FAILED'` | `'E_APPLICATION_GET_IOS_ID_FOR_VENDOR_FAILED'` | `'E_APPLICATION_GET_IOS_PUSH_NOTIFICATION_SERVICE_ENVIRONMENT_FAILED'` | `'E_APPLICATION_GET_LAST_UPDATE_TIME_FAILED'`
+
+---
+
+**Autor:** Manus AI
+**Data de Geração:** 13 de Junho de 2025
 

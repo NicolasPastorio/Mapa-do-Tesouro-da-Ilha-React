@@ -1,320 +1,184 @@
-# BackgroundTask
+# Tarefa em Segundo Plano (BackgroundTask)
 
-A library that provides an API for running background tasks.
+Uma biblioteca que fornece uma API para executar tarefas em segundo plano.
 
-`expo-background-task` provides an API to run deferrable background tasks in a way that optimizes battery and power consumption on the end user's device. This module uses the [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) API on Android and the [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) API on iOS to schedule tasks. It also uses the [`expo-task-manager`](https://docs.expo.dev/versions/latest/sdk/task-manager/) Native API to run JavaScript tasks.
+`expo-background-task` fornece uma API para executar tarefas em segundo plano adiáveis de uma forma que otimiza o consumo de bateria e energia no dispositivo do usuário final. Este módulo usa a API [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) no Android e a API [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) no iOS para agendar tarefas. Ele também usa a API Nativa [`expo-task-manager`](https://docs.expo.dev/versions/latest/sdk/task-manager/) para executar tarefas JavaScript.
 
-## Background tasks
+## Tarefas em Segundo Plano
 
-A background task is a deferrable unit of work that is performed in the background, outside your app's lifecycle. This is useful for tasks that need to be executed when the app is inactive, such as syncing data with a server, fetching new content, or even checking if there are any [`expo-updates`](https://docs.expo.dev/versions/latest/sdk/updates/).
+Uma tarefa em segundo plano é uma unidade de trabalho adiável que é executada em segundo plano, fora do ciclo de vida do seu aplicativo. Isso é útil para tarefas que precisam ser executadas quando o aplicativo está inativo, como sincronizar dados com um servidor, buscar novo conteúdo ou até mesmo verificar se há alguma [`expo-updates`](https://docs.expo.dev/versions/latest/sdk/updates/).
 
-### When are background tasks run?
+### Quando as tarefas em segundo plano são executadas?
 
-The Expo Background Task API leverages each platform to execute tasks at the most optimal time for both the user and the device when the app is in the background.
+A API de Tarefas em Segundo Plano do Expo aproveita cada plataforma para executar tarefas no momento mais ideal para o usuário e o dispositivo quando o aplicativo está em segundo plano.
 
-This means that the task may not run immediately after it is scheduled, but it will run at some point in the future if the system decides so. You can specify a minimum interval in minutes for the task to run. The task will execute sometime after the interval has passed, provided the specified conditions are met.
+Isso significa que a tarefa pode não ser executada imediatamente após ser agendada, mas será executada em algum momento no futuro se o sistema assim o decidir. Você pode especificar um intervalo mínimo em minutos para a tarefa ser executada. A tarefa será executada algum tempo depois que o intervalo tiver passado, desde que as condições especificadas sejam atendidas.
 
-A background task will only run if the battery has enough charge (or the device is plugged into power) and the network is available. Without these conditions, the task won't execute. The exact behavior will vary depending on the operating system.
+Uma tarefa em segundo plano só será executada se a bateria tiver carga suficiente (ou o dispositivo estiver conectado à energia) e a rede estiver disponível. Sem essas condições, a tarefa não será executada. O comportamento exato variará dependendo do sistema operacional.
 
-### When will they be stopped?
+### Quando elas serão interrompidas?
 
-Background tasks are managed by platform APIs and system constraints. Knowing when tasks stop helps plan their use effectively.
+As tarefas em segundo plano são gerenciadas por APIs de plataforma e restrições do sistema. Saber quando as tarefas param ajuda a planejar seu uso de forma eficaz.
 
-*   Background tasks are stopped if the user kills the app. Tasks resume when the app is restarted.
-*   If the system stops the app or the device reboots, background tasks will resume, and the app will be restarted.
+*   As tarefas em segundo plano são interrompidas se o usuário encerrar o aplicativo. As tarefas são retomadas quando o aplicativo é reiniciado.
+*   Se o sistema parar o aplicativo ou o dispositivo reiniciar, as tarefas em segundo plano serão retomadas e o aplicativo será reiniciado.
 
-On Android, removing an app from the recent apps list doesn't completely stop it, whereas on iOS, swiping it away in the app switcher fully terminates it.
+No Android, remover um aplicativo da lista de aplicativos recentes não o interrompe completamente, enquanto no iOS, deslizar para fora no alternador de aplicativos o encerra completamente.
 
-> On Android, behavior varies by device vendor. For example, some implementations treat removing an app from the recent apps list as killing it. Read more about these differences here: [https://dontkillmyapp.com](https://dontkillmyapp.com/).
+> No Android, o comportamento varia de acordo com o fornecedor do dispositivo. Por exemplo, algumas implementações tratam a remoção de um aplicativo da lista de aplicativos recentes como se o estivessem encerrando. Leia mais sobre essas diferenças aqui: [https://dontkillmyapp.com](https://dontkillmyapp.com/).
 
-## Platform differences
+## Diferenças de Plataforma
 
 ### Android
 
-On Android, the [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) API allows specifying a minimum interval for a task to run (minimum 15 minutes). The task will execute sometime after the interval has passed, provided the specified conditions are met.
+No Android, a API [`WorkManager`](https://developer.android.com/topic/libraries/architecture/workmanager) permite especificar um intervalo mínimo para uma tarefa ser executada (mínimo de 15 minutos). A tarefa será executada algum tempo depois que o intervalo tiver passado, desde que as condições especificadas sejam atendidas.
 
 ### iOS
 
-On iOS, the [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) API decides the best time to launch your background task. The system will consider the battery level, the network availability, and the user's usage patterns to determine when to run the task. You can still specify a minimum interval for the task to run, but the system may choose to run the task at a later time.
+No iOS, a API [`BGTaskScheduler`](https://developer.apple.com/documentation/backgroundtasks/bgtaskscheduler) decide o melhor momento para iniciar sua tarefa em segundo plano. O sistema considerará o nível da bateria, a disponibilidade da rede e os padrões de uso do usuário para determinar quando executar a tarefa. Você ainda pode especificar um intervalo mínimo para a tarefa ser executada, mas o sistema pode optar por executar a tarefa em um momento posterior.
 
-## Known limitations
+## Limitações Conhecidas
 
 ### iOS
 
-The [`Background Tasks`](https://developer.apple.com/documentation/backgroundtasks/) API is unavailable on iOS simulators. It is only available when running on a physical device.
+A API [`Background Tasks`](https://developer.apple.com/documentation/backgroundtasks/) não está disponível em simuladores iOS. Ela só está disponível ao executar em um dispositivo físico.
 
-## Installation
+## Instalação
 
-`-` `npx expo install expo-background-task`
+Para instalar a API BackgroundTask, execute o seguinte comando no seu projeto Expo:
 
-If you are installing this in an [existing React Native app](https://reactnative.dev/docs/integration-with-existing-apps), make sure to [install `expo`](https://docs.expo.dev/workflow/installing-expo-modules/) in your project.
+```bash
+npx expo install expo-background-task
+```
 
-## Configuration
+Se você estiver instalando isso em um [aplicativo React Native existente](https://reactnative.dev/docs/integration-with-existing-apps), certifique-se de ter o `expo` instalado em seu projeto.
 
-iOS
+## Configuração
 
-To be able to run background tasks on iOS, you need to add the `processing` value to the `UIBackgroundModes` array in your app's Info.plist file. This is required for background fetch to work properly.
+### iOS
 
-If you're using [CNG](https://docs.expo.dev/guides/config-plugins/#continuous-native-generation), the required `UIBackgroundModes` configuration will be applied automatically by prebuild.
+Para poder executar tarefas em segundo plano no iOS, você precisa adicionar o valor `processing` ao array `UIBackgroundModes` no arquivo `Info.plist` do seu aplicativo. Isso é necessário para que a busca em segundo plano funcione corretamente.
 
-Configure UIBackgroundModes manually on iOS
+Se você estiver usando [CNG](https://docs.expo.dev/workflow/continuous-native-generation/), a configuração `UIBackgroundModes` necessária será aplicada automaticamente pelo prebuild.
 
-If you're not using Continuous Native Generation ([CNG](https://docs.expo.dev/guides/config-plugins/#continuous-native-generation)), then you'll need to add the following to your Info.plist file:
+#### Configurar `UIBackgroundModes` manualmente no iOS
 
-ios/project-name/Supporting/Info.plist
+Se você não estiver usando a Geração Nativa Contínua ([CNG](https://docs.expo.dev/workflow/continuous-native-generation/)), você precisará adicionar o seguinte ao seu arquivo `Info.plist`:
 
-    <key>UIBackgroundModes</key>
-      <array>
-        <string>processing</string>
-      </array>
-    </key>
+`ios/project-name/Supporting/Info.plist`
 
-## Usage
+```xml
+<key>UIBackgroundModes</key>
+  <array>
+    <string>processing</string>
+  </array>
+</key>
+```
 
-Below is an example that demonstrates how to use `expo-background-task`.
+## Uso
 
-    import * as BackgroundTask from 'expo-background-task';
-    import * as TaskManager from 'expo-task-manager';
-    import { useEffect, useState } from 'react';
-    import { StyleSheet, Text, View, Button } from 'react-native';
-    
-    const BACKGROUND_TASK_IDENTIFIER = 'background-task';
-    
-    
-    
-    
-    TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
-      try {
-        const now = Date.now();
-        console.log(`Got background task call at date: ${new Date(now).toISOString()}`);
-      } catch (error) {
-        console.error('Failed to execute the background task:', error);
-        return BackgroundTask.BackgroundTaskResult.Failed;
-      }
-      return BackgroundTask.BackgroundTaskResult.Success;
-    });
-    
-    
-    
-    
-    async function registerBackgroundTaskAsync() {
-      return BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER);
+Abaixo está um exemplo que demonstra como usar `expo-background-task`.
+
+```javascript
+import * as BackgroundTask from 'expo-background-task';
+import * as TaskManager from 'expo-task-manager';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+
+const BACKGROUND_TASK_IDENTIFIER = 'background-task';
+
+TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
+  try {
+    const now = Date.now();
+    console.log(`Got background task call at date: ${new Date(now).toISOString()}`);
+  } catch (error) {
+    console.error('Failed to execute the background task:', error);
+    return BackgroundTask.BackgroundTaskResult.Failed;
+  }
+  return BackgroundTask.BackgroundTaskResult.Success;
+});
+
+async function registerBackgroundTaskAsync() {
+  return BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER);
+}
+
+async function unregisterBackgroundTaskAsync() {
+  return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
+}
+
+export default function BackgroundTaskScreen() {
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const [status, setStatus] = useState<BackgroundTask.BackgroundTaskStatus | null>(null);
+
+  useEffect(() => {
+    updateAsync();
+  }, []);
+
+  const updateAsync = async () => {
+    const status = await BackgroundTask.getStatusAsync();
+    setStatus(status);
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_TASK_IDENTIFIER);
+    setIsRegistered(isRegistered);
+  };
+
+  const toggle = async () => {
+    if (!isRegistered) {
+      await registerBackgroundTaskAsync();
+    } else {
+      await unregisterBackgroundTaskAsync();
     }
-    
-    
-    
-    
-    async function unregisterBackgroundTaskAsync() {
-      return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
-    }
-    
-    export default function BackgroundTaskScreen() {
-      const [isRegistered, setIsRegistered] = useState<boolean>(false);
-      const [status, setStatus] = useState<BackgroundTask.BackgroundTaskStatus | null>(null);
-    
-      useEffect(() => {
-        updateAsync();
-      }, []);
-    
-      const updateAsync = async () => {
-        const status = await BackgroundTask.getStatusAsync();
-        setStatus(status);
-        const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_TASK_IDENTIFIER);
-        setIsRegistered(isRegistered);
-      };
-    
-      const toggle = async () => {
-        if (!isRegistered) {
-          await registerBackgroundTaskAsync();
-        } else {
-          await unregisterBackgroundTaskAsync();
-        }
-        updateAsync();
-      };
-    
-      return (
-        <View style={styles.container}>
-          <Text>Background task status: {status}</Text>
-          <Text>Is registered: {isRegistered ? 'Yes' : 'No'}</Text>
-          <Button
-            title={isRegistered ? 'Unregister background task' : 'Register background task'}
-            onPress={toggle}
-          />
-        </View>
-      );
-    }
-    
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-    });
+    updateAsync();
+  };
 
-## Multiple background tasks
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Status da Tarefa em Segundo Plano: {status}</Text>
+      <Button
+        title={isRegistered ? 'Desregistrar Tarefa' : 'Registrar Tarefa'}
+        onPress={toggle}
+      />
+    </View>
+  );
+}
 
-You can register multiple background tasks with different identifiers. Each task will run independently.
-
-## Testing background tasks
-
-To test background tasks, you can use the `triggerTaskWorkerForTestingAsync()` method. This method will immediately execute the task worker, even if the minimum interval has not passed.
-
-## Inspecting background tasks
-
-You can inspect the status of background tasks using the `getStatusAsync()` method. This method returns a `BackgroundTaskStatus` enum value indicating whether the task is registered, unregistered, or unknown.
-
-## Troubleshooting background tasks
-
-If your background tasks are not running as expected, you can try the following:
-
-*   Check the device logs for any errors.
-*   Ensure that the app has the necessary permissions to run background tasks.
-*   Verify that the task identifier is correct.
-*   Increase the minimum interval to give the system more time to run the task.
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  text: {
+    fontSize: 20,
+    marginBottom: 10,
+  },
+});
+```
 
 ## API
 
-    import * as BackgroundTask from 'expo-background-task';
+```javascript
+import * as BackgroundTask from 'expo-background-task';
+```
 
-### Methods
+### Métodos
 
-#### `BackgroundTask.getStatusAsync()`
+*   **`getStatusAsync()`**: Retorna uma `Promise` que se resolve com o status atual da tarefa em segundo plano.
+*   **`registerTaskAsync(taskName, options)`**: Registra uma nova tarefa em segundo plano com o nome e opções fornecidos.
+*   **`triggerTaskWorkerForTestingAsync(taskName)`**: Aciona o worker da tarefa para fins de teste. Disponível apenas em ambientes de desenvolvimento.
+*   **`unregisterTaskAsync(taskName)`**: Desregistra uma tarefa em segundo plano com o nome fornecido.
 
-`BackgroundTask.getStatusAsync()`
+### Tipos
 
-Returns a `Promise` that fulfills with a `BackgroundTaskStatus` enum value indicating whether the task is registered, unregistered, or unknown.
+*   **`BackgroundTaskOptions`**: Opções para configurar uma tarefa em segundo plano, como `minimumInterval`.
 
-Returns:
+### Enums
 
-`Promise<BackgroundTaskStatus>`
+*   **`BackgroundTaskResult`**: Enum que representa o resultado de uma execução de tarefa em segundo plano (`Success`, `Failed`, `NoData`).
+*   **`BackgroundTaskStatus`**: Enum que representa o status de uma tarefa em segundo plano (`Available`, `Restricted`, `Denied`).
 
-Example
+---
 
-    const status = await BackgroundTask.getStatusAsync();
-
-#### `BackgroundTask.registerTaskAsync(taskName, taskWorker, options)`
-
-`BackgroundTask.registerTaskAsync(taskName, taskWorker, options)`
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| taskName | `string` | 
-The name of the task to register. This name must be unique across all background tasks.
-
-
-
- |
-| taskWorker | `Function` | 
-The function to execute when the task is run. This function must be an `async` function.
-
-
-
- |
-| options(optional) | `BackgroundTaskOptions` | 
-Options for the background task.
-
-
-
- |
-
-  
-
-Registers a background task with the given name and worker function. The task will be executed periodically in the background.
-
-Returns:
-
-`Promise<void>`
-
-Example
-
-    await BackgroundTask.registerTaskAsync(
-      'my-background-task',
-      async () => {
-        console.log('My background task is running!');
-      },
-      {
-        minimumInterval: 60 * 15, // Run every 15 minutes
-      }
-    );
-
-#### `BackgroundTask.triggerTaskWorkerForTestingAsync(taskName)`
-
-`BackgroundTask.triggerTaskWorkerForTestingAsync(taskName)`
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| taskName | `string` | 
-The name of the task to trigger.
-
-
-
- |
-
-  
-
-Immediately executes the task worker for the given task name. This method is useful for testing background tasks.
-
-Returns:
-
-`Promise<void>`
-
-Example
-
-    await BackgroundTask.triggerTaskWorkerForTestingAsync('my-background-task');
-
-#### `BackgroundTask.unregisterTaskAsync(taskName)`
-
-`BackgroundTask.unregisterTaskAsync(taskName)`
-
-| Parameter | Type | Description |
-| --- | --- | --- |
-| taskName | `string` | 
-The name of the task to unregister.
-
-
-
- |
-
-  
-
-Unregisters a background task with the given name. The task will no longer be executed in the background.
-
-Returns:
-
-`Promise<void>`
-
-Example
-
-    await BackgroundTask.unregisterTaskAsync('my-background-task');
-
-### Types
-
-#### `BackgroundTaskOptions`
-
-Type: `object`
-
-Options for a background task.
-
-### `BackgroundTaskResult`
-
-Type: `enum`
-
-Result of a background task.
-
-### `BackgroundTaskStatus`
-
-Type: `enum`
-
-Status of a background task.
-
-## Enums
-
-#### `BackgroundTaskResult`
-
-`BackgroundTask.BackgroundTaskResult.NoData` | `BackgroundTask.BackgroundTaskResult.NewData` | `BackgroundTask.BackgroundTaskResult.Failed`
-
-#### `BackgroundTaskStatus`
-
-`BackgroundTask.BackgroundTaskStatus.Registered` | `BackgroundTask.BackgroundTaskStatus.Unregistered` | `BackgroundTask.BackgroundTaskStatus.Unknown`
+**Autor:** Manus AI
+**Data de Geração:** 13 de Junho de 2025
 

@@ -1,154 +1,155 @@
 # AuthSession
 
-A universal library that provides an API to handle browser-based authentication.
+Uma biblioteca universal que fornece uma API para lidar com autenticação baseada em navegador.
 
-`AuthSession` enables web browser-based authentication (for example, browser-based OAuth flows) in your app by utilizing [WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) and [Crypto](https://docs.expo.dev/versions/latest/sdk/crypto/). For implementation details, refer to this reference, and for usage, see the [Authentication](https://docs.expo.dev/guides/authentication/) guide.
+`AuthSession` permite a autenticação baseada em navegador (por exemplo, fluxos OAuth baseados em navegador) em seu aplicativo utilizando [WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) e [Crypto](https://docs.expo.dev/versions/latest/sdk/crypto/). Para detalhes de implementação, consulte esta referência e, para uso, consulte o guia de [Autenticação](https://docs.expo.dev/guides/authentication/).
 
-> Note: `AuthSession` enables general-purpose OAuth and OpenID Connect browser-based auth workflows. Where available, we recommend using a library supplied by your identity provider, as it will handle implementation details specific to that provider. For example, use [`@react-native-google-signin/google-signin`](https://github.com/react-native-google-signin/google-signin) for Google authentication and [`react-native-fbsdk-next`](https://github.com/facebook/react-native-fbsdk-next) for Facebook. For more information, see [Authentication](https://docs.expo.dev/guides/authentication/) overview.
+> Nota: `AuthSession` permite fluxos de trabalho de autenticação baseados em navegador OAuth e OpenID Connect de propósito geral. Onde disponível, recomendamos usar uma biblioteca fornecida pelo seu provedor de identidade, pois ela lidará com detalhes de implementação específicos desse provedor. Por exemplo, use [`@react-native-google-signin/google-signin`](https://github.com/react-native-google-signin/google-signin) para autenticação do Google e [`react-native-fbsdk-next`](https://github.com/facebook/react-native-fbsdk-next) para Facebook. Para mais informações, consulte a visão geral de [Autenticação](https://docs.expo.dev/guides/authentication/).
 
-## Installation
+## Instalação
 
-> `expo-crypto` is a peer dependency and must be installed alongside `expo-auth-session`.
+> `expo-crypto` é uma dependência par e deve ser instalada junto com `expo-auth-session`.
 
-`-` `npx expo install expo-auth-session expo-crypto`
+Para instalar o AuthSession, execute o seguinte comando no seu projeto Expo:
 
-If you are installing this in an [existing React Native app](https://reactnative.dev/docs/integration-with-existing-apps), make sure to [install `expo`](https://docs.expo.dev/workflow/installing-expo-modules/) in your project.
+```bash
+npx expo install expo-auth-session expo-crypto
+```
 
-## Configuration
+Se você estiver instalando isso em um [aplicativo React Native existente](https://reactnative.dev/docs/integration-with-existing-apps), certifique-se de ter o `expo` instalado em seu projeto.
 
-Are you using this library in an existing React Native app?
+## Configuração
 
-To use this library, you need to set up deep linking in your app by setting up a `scheme`. Use the [`uri-scheme` CLI](https://github.com/expo/expo/tree/main/packages/uri-scheme) utility to easily add, remove, list, and open your URIs.
+Você está usando esta biblioteca em um aplicativo React Native existente?
 
-For example, to make your native app handle `mycoolredirect://`, run:
+Para usar esta biblioteca, você precisa configurar o deep linking em seu aplicativo configurando um `scheme`. Use o utilitário [`uri-scheme` CLI](https://github.com/expo/expo/tree/main/packages/uri-scheme) para adicionar, remover, listar e abrir seus URIs facilmente.
 
-`-` `npx uri-scheme add mycoolredirect`
+Por exemplo, para fazer seu aplicativo nativo lidar com `mycoolredirect://`, execute:
 
-You should now be able to see a list of all your project's schemes by running:
+```bash
+npx uri-scheme add mycoolredirect
+```
 
-You can test it to ensure it works like this:
+Agora você deve ser capaz de ver uma lista de todos os esquemas do seu projeto executando:
+
+Você pode testá-lo para garantir que funciona assim:
 
 Terminal
 
-`# Rebuild the native apps, be sure to use an emulator`
+`# Reconstrua os aplicativos nativos, certifique-se de usar um emulador`
 
-`-` `yarn android`
+```bash
+yarn android
+yarn ios
+```
 
-`-` `yarn ios`
+`# Abra um esquema de URI`
 
-`# Open a URI scheme`
+```bash
+npx uri-scheme open mycoolredirect://some/redirect
+```
 
-`-` `npx uri-scheme open mycoolredirect://some/redirect`
+### Uso em aplicativos autônomos
 
-### Usage in standalone apps
+```json
+{
+  "expo": {
+    "scheme": "mycoolredirect"
+  }
+}
+```
 
-    {
-      "expo": {
-        "scheme": "mycoolredirect"
-      }
-    }
+Para poder fazer deep link de volta ao seu aplicativo, você precisará definir um `scheme` na configuração do seu aplicativo e, em seguida, construir seu aplicativo autônomo (ele não pode ser atualizado com uma atualização). Se você não incluir um esquema, o fluxo de autenticação será concluído, mas não será possível passar as informações de volta para o seu aplicativo e o usuário terá que sair manualmente do modal de autenticação (resultando em um evento cancelado).
 
-To be able to deep link back into your app, you will need to set a `scheme` in your project's app config, and then build your standalone app (it can't be updated with an update). If you do not include a scheme, the authentication flow will complete, but it will be unable to pass the information back into your application and the user will have to manually exit the authentication modal (resulting in a canceled event).
+## Guias
 
-## Guides
+> Os guias foram movidos: [Guia de Autenticação](https://docs.expo.dev/guides/authentication/).
 
-> The guides have moved: [Authentication Guide](https://docs.expo.dev/guides/authentication/).
+## Como funcionam os fluxos de autenticação baseados em navegador
 
-## How web browser based authentication flows work
+O fluxo típico para autenticação baseada em navegador em aplicativos móveis é o seguinte:
 
-The typical flow for browser-based authentication in mobile apps is as follows:
+*   **Iniciação**: o usuário pressiona um botão de login.
+*   **Abrir navegador web**: o aplicativo abre um navegador web para a página de login do provedor de autenticação. A URL que é aberta para a página de login geralmente inclui informações para identificar o aplicativo e uma URL para redirecionar em caso de sucesso. _Nota: o navegador web deve compartilhar cookies com o navegador web do seu sistema para que os usuários não precisem fazer login novamente se já estiverem autenticados no navegador do sistema -- a API [WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) do Expo cuida disso._
+*   **Redirecionamentos do provedor de autenticação**: após a autenticação bem-sucedida, o provedor de autenticação deve redirecionar de volta para o aplicativo, redirecionando para a URL fornecida pelo aplicativo nos parâmetros de consulta na página de login ([leia mais sobre como o link funciona em aplicativos móveis](https://docs.expo.dev/guides/linking/)), _desde que a URL esteja na lista de permissões de URLs de redirecionamento permitidas_. A lista de permissões de URLs de redirecionamento é importante para evitar que atores mal-intencionados se passem pelo seu aplicativo. O redirecionamento inclui dados na URL (como ID do usuário e token), seja no hash de localização, parâmetros de consulta ou ambos.
+*   **O aplicativo lida com o redirecionamento**: o redirecionamento é tratado pelo aplicativo e os dados são analisados a partir da URL de redirecionamento.
 
-*   Initiation: the user presses a sign in button
-*   Open web browser: the app opens up a web browser to the authentication provider sign in page. The url that is opened for the sign in page usually includes information to identify the app, and a URL to redirect to on success. _Note: the web browser should share cookies with your system web browser so that users do not need to sign in again if they are already authenticated on the system browser -- Expo's [WebBrowser](https://docs.expo.dev/versions/latest/sdk/webbrowser/) API takes care of this._
-*   Authentication provider redirects: upon successful authentication, the authentication provider should redirect back to the application by redirecting to URL provided by the app in the query parameters on the sign in page ([read more about how linking works in mobile apps](https://docs.expo.dev/guides/linking/)), _provided that the URL is in the allowlist of allowed redirect URLs_. Allowlisting redirect URLs is important to prevent malicious actors from pretending to be your application. The redirect includes data in the URL (such as user id and token), either in the location hash, query parameters, or both.
-*   App handles redirect: the redirect is handled by the app and data is parsed from the redirect URL.
+## Considerações de Segurança
 
-## Security considerations
-
-*   Never put any secret keys inside your application code, there is no secure way to do this! Instead, you should store your secret key(s) on a server and expose an endpoint that makes API calls for your client and passes the data back.
+*   Nunca coloque chaves secretas dentro do código do seu aplicativo, não há uma maneira segura de fazer isso! Em vez disso, você deve armazenar suas chaves secretas em um servidor e expor um endpoint que faça chamadas de API para seu cliente e passe os dados de volta.
 
 ## API
 
-    import * as AuthSession from 'expo-auth-session';
+```javascript
+import * as AuthSession from 'expo-auth-session';
+```
 
 ## Hooks
 
 ### `useAuthRequest(config, discovery)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `AuthRequestConfig` | 
-A valid `AuthRequestConfig` that specifies what provider to use.
+| `config` | `AuthRequestConfig` | Uma `AuthRequestConfig` válida que especifica qual provedor usar. |
+| `discovery` | `null | DiscoveryDocument` | Um `DiscoveryDocument` carregado com endpoints usados para autenticação. Apenas `authorizationEndpoint` é necessário para solicitar um código de autorização. |
 
+Carrega uma solicitação de autorização para um código. Quando o método `prompt` é concluído, a resposta será atendida.
 
+> Para fechar a janela pop-up na web, você precisa invocar `WebBrowser.maybeCompleteAuthSession()`. Consulte o [exemplo do GitHub](https://github.com/expo/examples/tree/main/with-auth-session) para mais informações.
 
- |
-| discovery | `null | DiscoveryDocument` | 
+Se um fluxo de concessão implícita foi usado, você pode passar os `response.params` para `TokenResponse.fromQueryParams()` para obter uma instância `TokenResponse` que você pode usar para atualizar facilmente o token.
 
-A loaded `DiscoveryDocument` with endpoints used for authenticating. Only `authorizationEndpoint` is required for requesting an authorization code.
+Retorna:
 
+`[AuthRequest | null, AuthSessionResult | null, (options: AuthRequestPromptOptions) => Promise<void>]`
 
+Exemplo:
 
- |
-
-Load an authorization request for a code. When the prompt method completes then the response will be fulfilled.
-
-> In order to close the popup window on web, you need to invoke `WebBrowser.maybeCompleteAuthSession()`. See the [GitHub example](https://github.com/expo/examples/tree/main/with-auth-session) for more info.
-
-If an Implicit grant flow was used, you can pass the `response.params` to `TokenResponse.fromQueryParams()` to get a `TokenResponse` instance which you can use to easily refresh the token.
-
-Returns:
-
-`[AuthRequest | null, AuthSessionResult | null, (options: AuthRequestPromptOptions) => [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)<>]`
-
-Example
-
-    const [request, response, promptAsync] = useAuthRequest({ ... }, { ... });
+```javascript
+const [request, response, promptAsync] = useAuthRequest({ /* ... */ }, { /* ... */ });
+```
 
 ### `useAuthRequestResult(request, discovery, customOptions)`
 
-| Parameter | Type |
+| Parâmetro | Tipo |
 | --- | --- |
-| request | `null | AuthRequest` |
-| discovery | `null | DiscoveryDocument` |
-| customOptions(optional) | `AuthRequestPromptOptions` |
+| `request` | `null | AuthRequest` |
+| `discovery` | `null | DiscoveryDocument` |
+| `customOptions` (opcional) | `AuthRequestPromptOptions` |
 
-Returns:
+Retorna:
 
 `[AuthSessionResult | null, ]`
 
 ### `useAutoDiscovery(issuerOrDiscovery)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| issuerOrDiscovery | `IssuerOrDiscovery` | 
-URL using the `https` scheme with no query or fragment component that the OP asserts as its Issuer Identifier.
+| `issuerOrDiscovery` | `IssuerOrDiscovery` | URL usando o esquema `https` sem componente de consulta ou fragmento que o OP afirma ser seu Identificador de Emissor. |
 
+Dado uma URL de emissor OpenID Connect, isso buscará e retornará o `DiscoveryDocument` (uma coleção de URLs) do provedor de recursos.
 
-
- |
-
-Given an OpenID Connect issuer URL, this will fetch and return the `DiscoveryDocument` (a collection of URLs) from the resource provider.
-
-Returns:
+Retorna:
 
 `DiscoveryDocument | null`
 
-Returns `null` until the `DiscoveryDocument` has been fetched from the provided issuer URL.
+Retorna `null` até que o `DiscoveryDocument` tenha sido buscado da URL do emissor fornecida.
 
-Example
+Exemplo:
 
-    const discovery = useAutoDiscovery('https://example.com/auth');
+```javascript
+const discovery = useAutoDiscovery("https://example.com/auth");
+```
 
 ### `useLoadedAuthRequest(config, discovery, AuthRequestInstance)`
 
-| Parameter | Type |
+| Parâmetro | Tipo |
 | --- | --- |
-| config | `AuthRequestConfig` |
-| discovery | `null | DiscoveryDocument` |
-| AuthRequestInstance | `AuthRequest` |
+| `config` | `AuthRequestConfig` |
+| `discovery` | `null | DiscoveryDocument` |
+| `AuthRequestInstance` | `AuthRequest` |
 
-Returns:
+Retorna:
 
 `AuthRequest | null`
 
@@ -156,526 +157,430 @@ Returns:
 
 ### `AccessTokenRequest`
 
-Type: Class extends `TokenRequest`
+Tipo: Classe estende `TokenRequest`
 
-Represents a request to get an Access Token from an Authorization Server.
+Representa uma solicitação para obter um Token de Acesso de um Servidor de Autorização.
 
 ### `AuthError`
 
-Type: Class extends `Error`
+Tipo: Classe estende `Error`
 
-Represents an error that occurred during an authorization flow.
+Representa um erro que ocorreu durante um fluxo de autorização.
 
 ### `AuthRequest`
 
-Type: Class extends `Request`
+Tipo: Classe estende `Request`
 
-Represents an authorization request.
+Representa uma solicitação de autorização.
 
 ### `RefreshTokenRequest`
 
-Type: Class extends `TokenRequest`
+Tipo: Classe estende `TokenRequest`
 
-Represents a request to refresh an Access Token.
+Representa uma solicitação para atualizar um Token de Acesso.
 
 ### `Request`
 
-Type: Class
+Tipo: Classe
 
-Base class for all requests.
+Classe base para todas as solicitações.
 
 ### `ResponseError`
 
-Type: Class extends `Error`
+Tipo: Classe estende `Error`
 
-Represents an error that occurred during a token exchange.
+Representa um erro que ocorreu durante uma troca de token.
 
 ### `RevokeTokenRequest`
 
-Type: Class extends `Request`
+Tipo: Classe estende `Request`
 
-Represents a request to revoke a token.
+Representa uma solicitação para revogar um token.
 
 ### `TokenError`
 
-Type: Class extends `Error`
+Tipo: Classe estende `Error`
 
-Represents an error that occurred during a token request.
+Representa um erro que ocorreu durante uma solicitação de token.
 
 ### `TokenRequest`
 
-Type: Class extends `Request`
+Tipo: Classe estende `Request`
 
-Base class for all token requests.
+Classe base para todas as solicitações de token.
 
 ### `TokenResponse`
 
-Type: Class
+Tipo: Classe
 
-Represents a response from a token endpoint.
+Representa uma resposta de um endpoint de token.
 
-## Methods
+## Métodos
 
 ### `dismiss()`
 
 `AuthSession.dismiss()`
 
-Dismisses the currently presented AuthSession.
+Descarta a AuthSession atualmente apresentada.
 
 ### `exchangeCodeAsync(config, discovery)`
 
 `AuthSession.exchangeCodeAsync(config, discovery)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `AccessTokenRequestConfig` | 
-A valid `AccessTokenRequestConfig` that specifies what provider to use.
+| `config` | `AccessTokenRequestConfig` | Uma `AccessTokenRequestConfig` válida que especifica qual provedor usar. |
+| `discovery` | `DiscoveryDocument` | Um `DiscoveryDocument` carregado com endpoints usados para autenticação. |
 
+Troca um código de autorização por um token de acesso.
 
-
- |
-| discovery | `DiscoveryDocument` | 
-A loaded `DiscoveryDocument` with endpoints used for authenticating.
-
-
-
- |
-
-  
-
-Exchanges an authorization code for an access token.
-
-Returns:
+Retorna:
 
 `Promise<TokenResponse>`
 
-Example
+Exemplo:
 
-    const tokenResponse = await AuthSession.exchangeCodeAsync({ ... }, { ... });
+```javascript
+const tokenResponse = await AuthSession.exchangeCodeAsync({ /* ... */ }, { /* ... */ });
+```
 
 ### `fetchDiscoveryAsync(issuer)`
 
 `AuthSession.fetchDiscoveryAsync(issuer)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| issuer | `string` | 
-URL using the `https` scheme with no query or fragment component that the OP asserts as its Issuer Identifier.
+| `issuer` | `string` | URL usando o esquema `https` sem componente de consulta ou fragmento que o OP afirma ser seu Identificador de Emissor. |
 
+Dado uma URL de emissor OpenID Connect, isso buscará e retornará o `DiscoveryDocument` (uma coleção de URLs) do provedor de recursos.
 
-
- |
-
-  
-
-Given an OpenID Connect issuer URL, this will fetch and return the `DiscoveryDocument` (a collection of URLs) from the resource provider.
-
-Returns:
+Retorna:
 
 `Promise<DiscoveryDocument>`
 
-Example
+Exemplo:
 
-    const discovery = await AuthSession.fetchDiscoveryAsync('https://example.com/auth');
+```javascript
+const discovery = await AuthSession.fetchDiscoveryAsync("https://example.com/auth");
+```
 
 ### `fetchUserInfoAsync(config, token)`
 
 `AuthSession.fetchUserInfoAsync(config, token)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `UserInfoRequestConfig` | 
-A valid `UserInfoRequestConfig` that specifies what provider to use.
+| `config` | `UserInfoRequestConfig` | Uma `UserInfoRequestConfig` válida que especifica qual provedor usar. |
+| `token` | `TokenResponse` | Uma `TokenResponse` válida que contém um token de acesso. |
 
+Busca informações do usuário do endpoint de informações do usuário.
 
-
- |
-| token | `TokenResponse` | 
-A valid `TokenResponse` that contains an access token.
-
-
-
- |
-
-  
-
-Fetches user information from the userinfo endpoint.
-
-Returns:
+Retorna:
 
 `Promise<UserInfo>`
 
-Example
+Exemplo:
 
-    const userInfo = await AuthSession.fetchUserInfoAsync({ ... }, tokenResponse);
+```javascript
+const userInfo = await AuthSession.fetchUserInfoAsync({ /* ... */ }, tokenResponse);
+```
 
 ### `getCurrentTimeInSeconds()`
 
 `AuthSession.getCurrentTimeInSeconds()`
 
-Returns the current time in seconds.
+Retorna o tempo atual em segundos.
 
-Returns:
+Retorna:
 
 `number`
 
-Example
+Exemplo:
 
-    const currentTime = AuthSession.getCurrentTimeInSeconds();
+```javascript
+const currentTime = AuthSession.getCurrentTimeInSeconds();
+```
 
 ### `getDefaultReturnUrl()`
 
 `AuthSession.getDefaultReturnUrl()`
 
-Returns the default return URL for the current platform. This is the URL that will be used if no `redirectUri` is specified in the `AuthRequestConfig`.
+Retorna a URL de retorno padrão para a plataforma atual. Esta é a URL que será usada se nenhum `redirectUri` for especificado na `AuthRequestConfig`.
 
-Returns:
+Retorna:
 
 `string`
 
-Example
+Exemplo:
 
-    const defaultReturnUrl = AuthSession.getDefaultReturnUrl();
+```javascript
+const defaultReturnUrl = AuthSession.getDefaultReturnUrl();
+```
 
 ### `getRedirectUrl(scheme, path)`
 
 `AuthSession.getRedirectUrl(scheme, path)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| scheme | `string` | 
-The scheme of the redirect URL.
+| `scheme` | `string` | O esquema da URL de redirecionamento. |
+| `path` (opcional) | `string` | O caminho da URL de redirecionamento. |
 
+Retorna uma URL de redirecionamento para a plataforma atual. Esta é a URL para a qual seu provedor de autenticação deve redirecionar após o usuário ter se autenticado.
 
-
- |
-| path(optional) | `string` | 
-The path of the redirect URL.
-
-
-
- |
-
-  
-
-Returns a redirect URL for the current platform. This is the URL that your authentication provider should redirect to after the user has authenticated.
-
-Returns:
+Retorna:
 
 `string`
 
-Example
+Exemplo:
 
-    const redirectUrl = AuthSession.getRedirectUrl('mycoolredirect');
+```javascript
+const redirectUrl = AuthSession.getRedirectUrl("mycoolredirect");
+```
 
-### `make  AutoDiscoveryRequest(config)`
+### `makeAutoDiscoveryRequest(config)`
 
 `AuthSession.makeAutoDiscoveryRequest(config)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `AutoDiscoveryRequestConfig` | 
-A valid `AutoDiscoveryRequestConfig` that specifies what provider to use.
+| `config` | `AutoDiscoveryRequestConfig` | Uma `AutoDiscoveryRequestConfig` válida que especifica qual provedor usar. |
 
+Cria uma instância `AutoDiscoveryRequest`.
 
-
- |
-
-  
-
-Creates an `AutoDiscoveryRequest` instance.
-
-Returns:
+Retorna:
 
 `AutoDiscoveryRequest`
 
-Example
+Exemplo:
 
-    const request = AuthSession.makeAutoDiscoveryRequest({ ... });
+```javascript
+const request = AuthSession.makeAutoDiscoveryRequest({ /* ... */ });
+```
 
 ### `makeAuthRequest(config)`
 
 `AuthSession.makeAuthRequest(config)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `AuthRequestConfig` | 
-A valid `AuthRequestConfig` that specifies what provider to use.
+| `config` | `AuthRequestConfig` | Uma `AuthRequestConfig` válida que especifica qual provedor usar. |
 
+Cria uma instância `AuthRequest`.
 
-
- |
-
-  
-
-Creates an `AuthRequest` instance.
-
-Returns:
+Retorna:
 
 `AuthRequest`
 
-Example
+Exemplo:
 
-    const request = AuthSession.makeAuthRequest({ ... });
+```javascript
+const request = AuthSession.makeAuthRequest({ /* ... */ });
+```
 
 ### `makeTokenRequest(config)`
 
 `AuthSession.makeTokenRequest(config)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `TokenRequestConfig` | 
-A valid `TokenRequestConfig` that specifies what provider to use.
+| `config` | `TokenRequestConfig` | Uma `TokenRequestConfig` válida que especifica qual provedor usar. |
 
+Cria uma instância `TokenRequest`.
 
-
- |
-
-  
-
-Creates a `TokenRequest` instance.
-
-Returns:
+Retorna:
 
 `TokenRequest`
 
-Example
+Exemplo:
 
-    const request = AuthSession.makeTokenRequest({ ... });
+```javascript
+const request = AuthSession.makeTokenRequest({ /* ... */ });
+```
 
 ### `parseQueryParams(input)`
 
 `AuthSession.parseQueryParams(input)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| input | `string` | 
-The input string to parse.
+| `input` | `string` | A string de entrada para analisar. |
 
+Analisa parâmetros de consulta de uma string.
 
-
- |
-
-  
-
-Parses query parameters from a string.
-
-Returns:
+Retorna:
 
 `Record<string, string>`
 
-Example
+Exemplo:
 
-    const params = AuthSession.parseQueryParams('?code=123&state=abc');
+```javascript
+const params = AuthSession.parseQueryParams("?code=123&state=abc");
+```
 
 ### `promptAsync(request, options)`
 
 `AuthSession.promptAsync(request, options)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| request | `AuthRequest` | 
-A valid `AuthRequest` instance.
+| `request` | `AuthRequest` | Uma instância `AuthRequest` válida. |
+| `options` (opcional) | `AuthRequestPromptOptions` | Opções para o prompt. |
 
+Apresenta a solicitação de autorização ao usuário.
 
-
- |
-| options(optional) | `AuthRequestPromptOptions` | 
-Options for the prompt.
-
-
-
- |
-
-  
-
-Presents the authorization request to the user.
-
-Returns:
+Retorna:
 
 `Promise<AuthSessionResult>`
 
-Example
+Exemplo:
 
-    const result = await AuthSession.promptAsync(request);
+```javascript
+const result = await AuthSession.promptAsync(request);
+```
 
 ### `refreshAsync(config, token)`
 
 `AuthSession.refreshAsync(config, token)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `RefreshTokenRequestConfig` | 
-A valid `RefreshTokenRequestConfig` that specifies what provider to use.
+| `config` | `RefreshTokenRequestConfig` | Uma `RefreshTokenRequestConfig` válida que especifica qual provedor usar. |
+| `token` | `TokenResponse` | Uma `TokenResponse` válida que contém um token de atualização. |
 
+Atualiza um token de acesso.
 
-
- |
-| token | `TokenResponse` | 
-A valid `TokenResponse` that contains a refresh token.
-
-
-
- |
-
-  
-
-Refreshes an access token.
-
-Returns:
+Retorna:
 
 `Promise<TokenResponse>`
 
-Example
+Exemplo:
 
-    const newToken = await AuthSession.refreshAsync({ ... }, tokenResponse);
+```javascript
+const newToken = await AuthSession.refreshAsync({ /* ... */ }, tokenResponse);
+```
 
 ### `revokeAsync(config, token)`
 
 `AuthSession.revokeAsync(config, token)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `RevokeTokenRequestConfig` | 
-A valid `RevokeTokenRequestConfig` that specifies what provider to use.
+| `config` | `RevokeTokenRequestConfig` | Uma `RevokeTokenRequestConfig` válida que especifica qual provedor usar. |
+| `token` | `TokenResponse` | Uma `TokenResponse` válida que contém um token para revogar. |
 
+Revoga um token.
 
-
- |
-| token | `TokenResponse` | 
-A valid `TokenResponse` that contains a token to revoke.
-
-
-
- |
-
-  
-
-Revokes a token.
-
-Returns:
+Retorna:
 
 `Promise<void>`
 
-Example
+Exemplo:
 
-    await AuthSession.revokeAsync({ ... }, tokenResponse);
+```javascript
+await AuthSession.revokeAsync({ /* ... */ }, tokenResponse);
+```
 
 ### `startAsync(url, options)`
 
 `AuthSession.startAsync(url, options)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| url | `string` | 
-The URL to open.
+| `url` | `string` | A URL a ser aberta. |
+| `options` (opcional) | `AuthSessionOptions` | Opções para a sessão. |
 
+Inicia uma nova AuthSession.
 
-
- |
-| options(optional) | `AuthSessionOptions` | 
-Options for the session.
-
-
-
- |
-
-  
-
-Starts a new AuthSession.
-
-Returns:
+Retorna:
 
 `Promise<AuthSessionResult>`
 
-Example
+Exemplo:
 
-    const result = await AuthSession.startAsync('https://example.com/auth');
+```javascript
+const result = await AuthSession.startAsync("https://example.com/auth");
+```
 
 ### `unauthorizeAsync(config, token)`
 
 `AuthSession.unauthorizeAsync(config, token)`
 
-| Parameter | Type | Description |
+| Parâmetro | Tipo | Descrição |
 | --- | --- | --- |
-| config | `UnauthorizeRequestConfig` | 
-A valid `UnauthorizeRequestConfig` that specifies what provider to use.
+| `config` | `UnauthorizeRequestConfig` | Uma `UnauthorizeRequestConfig` válida que especifica qual provedor usar. |
+| `token` | `TokenResponse` | Uma `TokenResponse` válida que contém um token para desautorizar. |
 
+Desautoriza um token.
 
-
- |
-| token | `TokenResponse` | 
-A valid `TokenResponse` that contains a token to unauthorize.
-
-
-
- |
-
-  
-
-Unauthorizes a token.
-
-Returns:
+Retorna:
 
 `Promise<void>`
 
-Example
+Exemplo:
 
-    await AuthSession.unauthorizeAsync({ ... }, tokenResponse);
+```javascript
+await AuthSession.unauthorizeAsync({ /* ... */ }, tokenResponse);
+```
 
-## Types
+## Tipos
 
 ### `AuthRequestConfig`
 
-Type: `object`
+Tipo: `object`
 
-Configuration for an authorization request.
+Configuração para uma solicitação de autorização.
 
 ### `AuthSessionOptions`
 
-Type: `object`
+Tipo: `object`
 
-Options for an AuthSession.
+Opções para uma AuthSession.
 
 ### `AuthSessionResult`
 
-Type: `object`
+Tipo: `object`
 
-The result of an AuthSession.
+O resultado de uma AuthSession.
 
 ### `DiscoveryDocument`
 
-Type: `object`
+Tipo: `object`
 
-A collection of URLs used for authenticating.
+Uma coleção de URLs usadas para autenticação.
 
 ### `IssuerOrDiscovery`
 
-Type: `string | DiscoveryDocument`
+Tipo: `string | DiscoveryDocument`
 
-An issuer URL or a DiscoveryDocument.
+Um URL de emissor ou um DiscoveryDocument.
 
 ### `TokenResponseConfig`
 
-Type: `object`
+Tipo: `object`
 
-Configuration for a token response.
+Configuração para uma resposta de token.
 
 ### `UserInfo`
 
-Type: `object`
+Tipo: `object`
 
-User information.
+Informações do usuário.
 
 ### `UserInfoRequestConfig`
 
-Type: `object`
+Tipo: `object`
 
-Configuration for a user info request.
+Configuração para uma solicitação de informações do usuário.
 
-## Error codes
+## Códigos de Erro
 
 ### `AuthSession.ErrorCode`
 
-`'ERR_AUTH_SESSION_START_FAILED'` | `'ERR_AUTH_SESSION_DISMISS_FAILED'` | `'ERR_AUTH_SESSION_EXCHANGE_CODE_FAILED'` | `'ERR_AUTH_SESSION_FETCH_DISCOVERY_FAILED'` | `'ERR_AUTH_SESSION_FETCH_USER_INFO_FAILED'` | `'ERR_AUTH_SESSION_REFRESH_FAILED'` | `'ERR_AUTH_SESSION_REVOKE_FAILED'` | `'ERR_AUTH_SESSION_UNAUTHORIZE_FAILED'`
+`'E_AUTH_SESSION_START_FAILED'` | `'E_AUTH_SESSION_DISMISS_FAILED'` | `'E_AUTH_SESSION_EXCHANGE_CODE_FAILED'` | `'E_AUTH_SESSION_FETCH_DISCOVERY_FAILED'` | `'E_AUTH_SESSION_FETCH_USER_INFO_FAILED'` | `'E_AUTH_SESSION_REFRESH_FAILED'` | `'E_AUTH_SESSION_REVOKE_FAILED'` | `'E_AUTH_SESSION_UNAUTHORIZE_FAILED'`
+
+---
+
+**Autor:** Manus AI
+**Data de Geração:** 13 de Junho de 2025
 
