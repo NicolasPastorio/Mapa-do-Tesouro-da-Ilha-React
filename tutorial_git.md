@@ -155,118 +155,118 @@ Gitflow é um modelo de branching popular que define um fluxo de trabalho rigoro
 ### `git branch`
 
 *   **Listar branches:**
-    ```bash
+```bash
 git branch
-    ```
+```
     (Mostra as branches locais. A branch atual é marcada com um asterisco.)
 
 *   **Listar branches remotas:**
-    ```bash
+```bash
 git branch -r
-    ```
+```
 
 *   **Listar todas as branches (locais e remotas):**
-    ```bash
+```bash
 git branch -a
-    ```
+```
 
 *   **Criar uma nova branch:**
-    ```bash
+```bash
 git branch <nome-da-nova-branch>
-    ```
+```
     (Isso cria a branch, mas não muda para ela.)
 
 ### `git checkout`
 
 *   **Mudar para uma branch existente:**
-    ```bash
+```bash
 git checkout <nome-da-branch>
-    ```
+```
 
 *   **Criar e mudar para uma nova branch (atalho):**
-    ```bash
+```bash
 git checkout -b <nome-da-nova-branch>
-    ```
+```
 
 ### `git merge`
 
 *   **Mesclar uma branch em outra:**
     Primeiro, mude para a branch que receberá as alterações (ex: `develop`):
-    ```bash
+```bash
 git checkout develop
-    ```
+```
     Em seguida, mescle a branch desejada (ex: `feature/minha-funcionalidade`):
-    ```bash
+```bash
 git merge feature/minha-funcionalidade
-    ```
+```
 
 ### `git push`
 
 *   **Enviar uma branch local para o repositório remoto:**
-    ```bash
+```bash
 git push origin <nome-da-branch>
-    ```
+```
     (A primeira vez que você envia uma nova branch, pode ser necessário usar `-u` para configurar o rastreamento remoto: `git push -u origin <nome-da-branch>`)
 
 ### `git pull`
 
 *   **Atualizar sua branch local com as alterações do repositório remoto:**
-    ```bash
+```bash
 git pull origin <nome-da-branch>
-    ```
+```
     (Ou simplesmente `git pull` se a branch local já estiver rastreando uma branch remota.)
 
 ### `git branch -d`
 
 *   **Excluir uma branch local:**
-    ```bash
+```bash
 git branch -d <nome-da-branch>
-    ```
+```
     (Só é possível excluir uma branch se você não estiver nela e se ela já tiver sido mesclada.)
 
 *   **Excluir uma branch local à força (cuidado!):**
-    ```bash
+```bash
 git branch -D <nome-da-branch>
-    ```
+```
 
 ### `git push origin --delete`
 
 *   **Excluir uma branch remota:**
-    ```bash
+```bash
 git push origin --delete <nome-da-branch-remota>
-    ```
+```
 
 ## Versionando uma Pasta para Utilizar em Softwares
 
 O processo de versionar uma pasta para uso em softwares é essencialmente o mesmo de versionar qualquer projeto com Git. A ideia é que o código-fonte ou os arquivos de configuração do software sejam gerenciados por um repositório Git.
 
 1.  **Navegue até a pasta do software:**
-    ```bash
+```bash
 cd /caminho/para/pasta/do/software
-    ```
+```
 
 2.  **Inicialize o repositório Git:**
-    ```bash
+```bash
 git init
-    ```
+```
 
 3.  **Adicione os arquivos do software:**
-    ```bash
+```bash
 git add .
-    ```
+```
 
 4.  **Faça o primeiro commit:**
-    ```bash
+```bash
 git commit -m "Primeiro commit: inicialização do repositório do software"
-    ```
+```
 
 5.  **Opcional: Conecte a um repositório remoto (GitHub, GitLab, Bitbucket, etc.):**
     Se você deseja colaborar ou ter um backup remoto, crie um repositório no GitHub (conforme explicado anteriormente) e conecte-o:
-    ```bash
+```bash
 git remote add origin <URL_do_repositorio_remoto>
 git branch -M main
 git push -u origin main
-    ```
+```
 
 Com isso, todas as alterações futuras na pasta do seu software podem ser rastreadas, commitadas e, se necessário, enviadas para um repositório remoto.
 
